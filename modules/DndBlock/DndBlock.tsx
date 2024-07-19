@@ -13,42 +13,37 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import React, { useCallback, type FC } from 'react';
-import { renderCalculatorBlock } from '../../helpers/renderCalculatorBlock';
+import React, { useCallback, type FC, useMemo } from 'react';
 import { useDoubleClick } from '../../hooks/useDoubleClick';
-import { type ICalculationData, type ICalculatorItem } from '../../pages/types';
-import DraggableWrapper from '../../ui/DraggableWrapper/DraggableWrapper';
-import DroppableField from '../../ui/DroppableField/DroppableFieldField';
+import { type BlockType, type CalculationData, type CalculatorItem } from '../../pages/types';
+import DraggableWrapper from '../../ui/dndBlocks/DraggableWrapper/DraggableWrapper';
+import DroppableField from '../../ui/dndBlocks/DroppableField/DroppableField';
 import TransferIcon from './TransferIcon';
+import CalculatorBlockWrapper from '../../ui/wrappers/CalculatorBlockWrapper/CalculatorBlockWrapper';
 
-interface IDndBlockProps {
-  calculatorItems: ICalculatorItem[];
-  setCalculatorItems: (value: ICalculatorItem[]) => void;
-  itemsWithParent: ICalculatorItem[];
-  setItemsWithParent: (value: ICalculatorItem[]) => void;
-  activeId:
-    | 'display'
-    | 'arithmeticSignsBlock'
-    | 'numbersBlock'
-    | 'equalButton'
-    | null;
-  setActiveId: any;
+interface DndBlockProps {
+  calculatorItems: CalculatorItem[];
+  setCalculatorItems: (arg: CalculatorItem[]) => void;
+  itemsWithParent: CalculatorItem[];
+  setItemsWithParent: (arg: CalculatorItem[]) => void;
+  activeBlockType?: BlockType;
+  setActiveBlockType: (arg: BlockType | undefined) => void;
   dragOverNow: boolean;
-  setDragOverNow: (boolean) => void;
-  mode: boolean;
-  calculatorData: ICalculationData;
-  setCalculatorData: (ICalculationDataState) => void;
+  setDragOverNow: (arg: boolean) => void;
+  isConstructorMode: boolean;
+  calculatorData: CalculationData;
+  setCalculatorData: (arg: CalculationData) => void;
 }
 
-const DndBlock: FC<IDndBlockProps> = ({
+const DndBlock: FC<DndBlockProps> = ({
   calculatorItems,
   setCalculatorItems,
   itemsWithParent,
   setItemsWithParent,
-  setActiveId,
+  setActiveBlockType,
   setDragOverNow,
-  activeId,
-  mode,
+  activeBlockType,
+  isConstructorMode,
   calculatorData,
   setCalculatorData,
   dragOverNow,
@@ -60,73 +55,70 @@ const DndBlock: FC<IDndBlockProps> = ({
     }),
   );
 
+  const withTransfer = useMemo(() => {
+    return dragOverNow && itemsWithParent.length > 0;
+  }, [dragOverNow, itemsWithParent.length]);
+
+  const itemsWithParentSortable = useMemo(
+    () => itemsWithParent.map(item => ({ id: item.blockType })),
+    [itemsWithParent],
+  );
+
   const handleDragEnd = (event): void => {
-    if (event.over !== null && event.over.id === 'A') {
+    if (event.over?.id === 'container') {
       const addParentItem = {
-        ...calculatorItems.find(
-          i => i.id === event.active.id && i.parent === '',
-        ),
+        ...calculatorItems.find(item => item.blockType === event.active.id && !item.parent),
       };
 
-      if (addParentItem.id !== null && addParentItem.parent !== null) {
-        const deleteItem = calculatorItems.findIndex(
-          i => i.id === event.active.id,
-        );
+      if (addParentItem.blockType && !addParentItem.parent) {
+        const deleteItem = calculatorItems.findIndex(i => i.blockType === event.active.id);
         if (deleteItem !== -1) {
           calculatorItems.splice(deleteItem, 1, {
-            parent: 'A',
-            id: event.active.id,
+            parent: true,
+            blockType: event.active.id,
           });
           setCalculatorItems([...calculatorItems]);
         }
-        if (addParentItem.id !== undefined) {
-          if (addParentItem.id === 'display') {
-            const newArr: ICalculatorItem = {
-              parent: 'A',
-              id: addParentItem.id,
-            };
-            setItemsWithParent([{ ...newArr }, ...itemsWithParent]);
-          } else {
-            const newArr: ICalculatorItem = {
-              parent: 'A',
-              id: addParentItem.id,
-            };
-            setItemsWithParent([...itemsWithParent, { ...newArr }]);
-          }
+        if (addParentItem.blockType === 'display') {
+          const newArr: CalculatorItem = {
+            parent: true,
+            blockType: addParentItem.blockType,
+          };
+          setItemsWithParent([{ ...newArr }, ...itemsWithParent]);
+        } else {
+          const newArr: CalculatorItem = {
+            parent: true,
+            blockType: addParentItem.blockType,
+          };
+          setItemsWithParent([...itemsWithParent, { ...newArr }]);
         }
       }
       setCalculatorItems([...calculatorItems]);
     }
-    setActiveId(null);
+    setActiveBlockType(undefined);
     setDragOverNow(false);
   };
 
   const handleDragStart = (event): void => {
-    setActiveId(event.active.id);
+    setActiveBlockType(event.active.id);
   };
 
   const hybridClick = useDoubleClick(
     event => {
-      setActiveId(event.active.id);
+      setActiveBlockType(event.active.id);
     },
-    (event, itemsParent: ICalculatorItem[]) => {
-      const deleteIndex = itemsParent.findIndex(
-        item => item.id === event.active.id,
-      );
+    event => {
+      const deleteIndex = itemsWithParent.findIndex(item => item.blockType === event.active.id);
       if (deleteIndex !== -1) {
-        itemsParent.splice(deleteIndex, 1);
-        setItemsWithParent([...itemsParent]);
-        const deleteParent = calculatorItems?.find(
-          i => i.id === event.active.id,
-        );
+        itemsWithParent.splice(deleteIndex, 1);
+        setItemsWithParent([...itemsWithParent]);
+        const deleteParent = calculatorItems?.find(i => i.blockType === event.active.id);
         if (deleteParent !== undefined) {
-          deleteParent.parent = '';
+          deleteParent.parent = false;
         }
         setCalculatorItems([...calculatorItems]);
       }
     },
-    'event',
-    [itemsWithParent],
   );
 
   const handleDragStartSort = (event: DragStartEvent): void => {
@@ -135,30 +127,24 @@ const DndBlock: FC<IDndBlockProps> = ({
 
   const handleDragEndSort = useCallback(
     event => {
-      if (activeId !== null) {
+      if (activeBlockType !== undefined) {
         const { active, over } = event;
 
         if (active.id !== over.id) {
-          const newItemsWithParent = (): ICalculatorItem[] => {
-            const from = itemsWithParent.findIndex(
-              item => item.id === active.id,
-            );
-            const to = itemsWithParent.findIndex(item => item.id === over.id);
-            const newArray: ICalculatorItem[] = itemsWithParent.slice();
-            newArray.splice(
-              to < 0 ? newArray.length + to : to,
-              0,
-              newArray.splice(from, 1)[0],
-            );
+          const newItemsWithParent = (): CalculatorItem[] => {
+            const from = itemsWithParent.findIndex(item => item.blockType === active.id);
+            const to = itemsWithParent.findIndex(item => item.blockType === over.id);
+            const newArray: CalculatorItem[] = itemsWithParent.slice();
+            newArray.splice(to < 0 ? newArray.length - 1 : to, 0, newArray.splice(from, 1)[0]);
             return newArray;
           };
 
           setItemsWithParent(newItemsWithParent());
         }
-        setActiveId(null);
+        setActiveBlockType(undefined);
       }
     },
-    [activeId, setActiveId, setItemsWithParent],
+    [activeBlockType, setActiveBlockType, setItemsWithParent],
   );
 
   const handleDragOver = (event): void => {
@@ -170,46 +156,37 @@ const DndBlock: FC<IDndBlockProps> = ({
   };
 
   return (
-    <DndContext
-      onDragEnd={handleDragEnd}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-    >
+    <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart} onDragOver={handleDragOver}>
       <div className="flex gap-14 items-center mt-[30px]">
         <div className="gap-[12px] flex flex-col">
           {calculatorItems.map(el => {
-            if (el.parent === 'A') {
-              return renderCalculatorBlock(
-                el.id,
-                'disabled',
-                activeId,
-                mode,
-                calculatorData,
-                setCalculatorData,
-                'haveParent',
+            if (el.parent) {
+              return (
+                <CalculatorBlockWrapper
+                  blockType={el.blockType}
+                  disabledStatus={true}
+                  calculatorData={calculatorData}
+                  setCalculatorData={setCalculatorData}
+                  isConstructorMode={isConstructorMode}
+                  key={el.blockType + 'disabled'}
+                />
               );
             } else {
               return (
-                <DraggableWrapper id={el.id} key={el.id}>
-                  {renderCalculatorBlock(
-                    el.id,
-                    'standard',
-                    activeId,
-                    mode,
-                    calculatorData,
-                    setCalculatorData,
-                    'notHaveParent',
-                  )}
+                <DraggableWrapper blockType={el.blockType} key={el.blockType + 'standard'}>
+                  <CalculatorBlockWrapper
+                    blockType={el.blockType}
+                    disabledStatus={false}
+                    calculatorData={calculatorData}
+                    setCalculatorData={setCalculatorData}
+                    isConstructorMode={isConstructorMode}
+                  />
                 </DraggableWrapper>
               );
             }
           })}
         </div>
-        <DroppableField
-          key={'A'}
-          id={'A'}
-          quantityChildren={itemsWithParent.length}
-        >
+        <DroppableField key={'A'} name={'container'} quantityChildren={itemsWithParent.length}>
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -218,65 +195,47 @@ const DndBlock: FC<IDndBlockProps> = ({
             }}
             onDragStart={handleDragStartSort}
           >
-            <SortableContext
-              items={itemsWithParent}
-              strategy={verticalListSortingStrategy}
-            >
-              {activeId === 'display' &&
-              dragOverNow &&
-              itemsWithParent.length > 0 ? (
-                <TransferIcon />
-              ) : null}
+            <SortableContext items={itemsWithParentSortable} strategy={verticalListSortingStrategy}>
+              {activeBlockType === 'display' && withTransfer && <TransferIcon />}
 
-              {itemsWithParent.map(el =>
-                renderCalculatorBlock(
-                  el.id,
-                  'withDoubleClick',
-                  activeId,
-                  mode,
-                  calculatorData,
-                  setCalculatorData,
-                  'sort',
-                ),
-              )}
-              {activeId !== 'display' &&
-              dragOverNow &&
-              itemsWithParent.length > 0 ? (
-                <TransferIcon />
-              ) : null}
+              {itemsWithParent.map(el => (
+                <CalculatorBlockWrapper
+                  withDoubleClickStatus={true}
+                  blockType={el.blockType}
+                  key={el.blockType + 'withDoubleClick'}
+                  activeBlockType={activeBlockType}
+                />
+              ))}
+              {withTransfer && activeBlockType !== 'display' && <TransferIcon />}
             </SortableContext>
             <DragOverlay dropAnimation={null}>
-              {activeId !== null ? (
+              {activeBlockType && (
                 <div className="opacity-50 cursor-move">
-                  {renderCalculatorBlock(
-                    activeId,
-                    'standard',
-                    activeId,
-                    mode,
-                    calculatorData,
-                    setCalculatorData,
-                    'dragOverlaySort',
-                  )}
+                  <CalculatorBlockWrapper
+                    disabledStatus={false}
+                    blockType={activeBlockType}
+                    calculatorData={calculatorData}
+                    setCalculatorData={setCalculatorData}
+                    isConstructorMode={isConstructorMode}
+                  />
                 </div>
-              ) : null}
+              )}
             </DragOverlay>
           </DndContext>
         </DroppableField>
 
         <DragOverlay>
-          {activeId !== null ? (
+          {activeBlockType && (
             <div className="opacity-70 cursor-move">
-              {renderCalculatorBlock(
-                activeId,
-                'standard',
-                activeId,
-                mode,
-                calculatorData,
-                setCalculatorData,
-                'dragOverlay',
-              )}
+              <CalculatorBlockWrapper
+                disabledStatus={false}
+                blockType={activeBlockType}
+                calculatorData={calculatorData}
+                setCalculatorData={setCalculatorData}
+                isConstructorMode={isConstructorMode}
+              />
             </div>
-          ) : null}
+          )}
         </DragOverlay>
       </div>
     </DndContext>

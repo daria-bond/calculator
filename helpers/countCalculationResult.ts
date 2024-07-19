@@ -7,14 +7,16 @@ export const countCalculationResult = (
 ): number => {
   switch (operator) {
     case 'addition':
-      return firstNumber + secondNumber;
+      return resultLength(firstNumber + secondNumber);
     case 'multiplication':
-      return firstNumber * secondNumber;
+      return resultLength(firstNumber * secondNumber);
     case 'subtraction':
-      return firstNumber - secondNumber;
+      return resultLength(firstNumber - secondNumber);
     case 'division':
-      return firstNumber / secondNumber;
-    default:
-      return 11111111111111;
+      return resultLength(firstNumber / secondNumber);
   }
+};
+
+const resultLength = (num: number): number => {
+  return Number(num.toString().slice(0, 16));
 };

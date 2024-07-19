@@ -1,34 +1,18 @@
-export interface ICalculationData {
-  firstNumber: number | null;
-  secondNumber: number | null;
-  operator: Operator;
+export interface CalculationData {
+  firstNumber?: number;
+  secondNumber?: number;
+  operator?: Operator;
   equalButtonPress: boolean;
-  previousOperator: Operator;
-  previousSecondNumber: number | null;
-  currentValueOnDisplay: number | null;
+  previousOperator?: Operator;
+  previousSecondNumber?: number;
+  currentValueOnDisplay?: string;
 }
 
-export type Operator =
-  | 'addition'
-  | 'multiplication'
-  | 'subtraction'
-  | 'division'
-  | null;
+export type Operator = 'addition' | 'multiplication' | 'subtraction' | 'division';
 
-export interface ICalculatorItem {
-  parent: '' | 'A';
-  id: IdWithoutNull;
+export interface CalculatorItem {
+  parent: boolean;
+  blockType: BlockType;
 }
 
-export type IdWithNull =
-  | 'display'
-  | 'arithmeticSignsBlock'
-  | 'numbersBlock'
-  | 'equalButton'
-  | null;
-
-export type IdWithoutNull =
-  | 'display'
-  | 'arithmeticSignsBlock'
-  | 'numbersBlock'
-  | 'equalButton';
+export type BlockType = 'display' | 'arithmeticSignsBlock' | 'numbersBlock' | 'equalButton';

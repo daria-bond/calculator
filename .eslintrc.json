@@ -20,6 +20,6 @@
         "endOfLine": "auto"
       }
     ],
-    "@typescript-eslint/strict-boolean-expressions": "warn"
+    "@typescript-eslint/strict-boolean-expressions": "off"
   }
 }

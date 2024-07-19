@@ -1,21 +1,23 @@
 import { useSortable } from '@dnd-kit/sortable';
 import React, { type FC, type ReactNode } from 'react';
+import { type BlockType } from '../../../pages/types';
 
-interface ISortableWrapperProps {
+interface SortableWrapperProps {
   children: ReactNode;
-  activeId;
-  id;
+  activeBlockType?: BlockType;
+  blockType: BlockType;
   allClasses: string;
 }
 
-const SortableWrapper: FC<ISortableWrapperProps> = ({
+const SortableWrapper: FC<SortableWrapperProps> = ({
   children,
-  activeId,
-  id,
+  activeBlockType,
+  blockType,
   allClasses,
 }) => {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useSortable({
+    id: blockType,
+  });
 
   const style =
     transform !== null
@@ -27,9 +29,7 @@ const SortableWrapper: FC<ISortableWrapperProps> = ({
   return (
     <div
       className={`${allClasses} ${
-        transform !== null && isDragging && activeId !== null
-          ? 'opacity-50'
-          : ''
+        transform !== null && isDragging && activeBlockType ? 'opacity-50' : ''
       }`}
       ref={setNodeRef}
       {...attributes}

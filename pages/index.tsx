@@ -1,90 +1,72 @@
 import React, { useState } from 'react';
 import CalculatorBlock from '../modules/CalculatorBlock/CalculatorBlock';
 import DndBlock from '../modules/DndBlock/DndBlock';
-import MainWrapper from '../ui/MainWrapper/MainWrapper';
-import SwitchButton from '../ui/SwitchButton/SwitchButton';
-import {
-  type ICalculationData,
-  type ICalculatorItem,
-  type IdWithNull,
-} from './types';
+import MainWrapper from '../ui/wrappers/MainWrapper/MainWrapper';
+import SwitchButton from '../ui/buttons/SwitchButton/SwitchButton';
+import { type BlockType, type CalculationData, type CalculatorItem } from './types';
+import { initCalculatorData } from '../helpers/consts';
 
 export default function HomePage(): JSX.Element {
-  const [calculatorData, setCalculatorData] = useState<ICalculationData>({
-    firstNumber: null,
-    secondNumber: null,
-    operator: null,
-    equalButtonPress: false,
-    previousOperator: null,
-    previousSecondNumber: null,
-    currentValueOnDisplay: 0,
+  const [data, setData] = useState<CalculationData>({
+    ...initCalculatorData,
   });
-  const [mode, setMode] = useState(true);
-  const [calculatorItems, setCalculatorItems] = useState<ICalculatorItem[]>([
+  const [isConstructorMode, setIsConstructorMode] = useState(true);
+  const [calculatorItems, setCalculatorItems] = useState<CalculatorItem[]>([
     {
-      parent: '',
-      id: 'display',
+      parent: false,
+      blockType: 'display',
     },
     {
-      parent: '',
-      id: 'arithmeticSignsBlock',
+      parent: false,
+      blockType: 'arithmeticSignsBlock',
     },
     {
-      parent: '',
-      id: 'numbersBlock',
+      parent: false,
+      blockType: 'numbersBlock',
     },
     {
-      parent: '',
-      id: 'equalButton',
+      parent: false,
+      blockType: 'equalButton',
     },
   ]);
-  const [itemsWithParent, setItemsWithParent] = useState<ICalculatorItem[]>([]);
-  const [activeId, setActiveId] = useState<IdWithNull>(null);
+  const [itemsWithParent, setItemsWithParent] = useState<CalculatorItem[]>([]);
+  const [activeBlockType, setActiveBlockType] = useState<BlockType | undefined>(undefined);
   const [dragOverNow, setDragOverNow] = useState(false);
 
-  const onModeChange = (): void => {
-    setMode(!mode);
-    setCalculatorData({
-      firstNumber: null,
-      secondNumber: null,
-      operator: null,
-      equalButtonPress: false,
-      previousOperator: null,
-      previousSecondNumber: null,
-      currentValueOnDisplay: 0,
-    });
+  const onChangeIsConstructorMode = (): void => {
+    setIsConstructorMode(!isConstructorMode);
+    setData({ ...initCalculatorData });
   };
 
   return (
     <MainWrapper>
       <SwitchButton
-        checked={mode}
+        checked={isConstructorMode}
         setCheck={() => {
-          onModeChange();
+          onChangeIsConstructorMode();
         }}
-        name="mode"
+        name="isConstructorMode"
       />
-      {mode ? (
+      {isConstructorMode ? (
         <DndBlock
           calculatorItems={calculatorItems}
           setCalculatorItems={setCalculatorItems}
           itemsWithParent={itemsWithParent}
           setItemsWithParent={setItemsWithParent}
-          setActiveId={setActiveId}
+          setActiveBlockType={setActiveBlockType}
           setDragOverNow={setDragOverNow}
-          activeId={activeId}
-          mode={mode}
-          calculatorData={calculatorData}
-          setCalculatorData={setCalculatorData}
+          activeBlockType={activeBlockType}
+          isConstructorMode={isConstructorMode}
+          calculatorData={data}
+          setCalculatorData={setData}
           dragOverNow={dragOverNow}
         />
       ) : (
         <CalculatorBlock
           itemsWithParent={itemsWithParent}
-          activeId={activeId}
-          mode={mode}
-          calculatorData={calculatorData}
-          setCalculatorData={setCalculatorData}
+          isConstructorMode={isConstructorMode}
+          calculatorData={data}
+          setCalculatorData={setData}
         />
       )}
     </MainWrapper>

@@ -2,19 +2,15 @@ import { useDroppable } from '@dnd-kit/core';
 import React, { type FC, type ReactNode } from 'react';
 import FieldIcon from './FieldIcon';
 
-interface IDroppableFieldProps {
+interface DroppableFieldProps {
   children: ReactNode;
-  id: string;
+  name: string;
   quantityChildren: number;
 }
 
-const DroppableField: FC<IDroppableFieldProps> = ({
-  children,
-  id,
-  quantityChildren,
-}) => {
+const DroppableField: FC<DroppableFieldProps> = ({ children, name, quantityChildren }) => {
   const { isOver, setNodeRef } = useDroppable({
-    id,
+    id: name,
   });
   const style = {
     backgroundColor: isOver && quantityChildren === 0 ? '#F0F9FF' : undefined,
@@ -31,9 +27,7 @@ const DroppableField: FC<IDroppableFieldProps> = ({
       {quantityChildren === 0 && (
         <>
           <FieldIcon />
-          <p className="text-[#5D5FEF] text-sm/[17px] font-medium pt-3">
-            Перетащите сюда
-          </p>
+          <p className="text-[#5D5FEF] text-sm/[17px] font-medium pt-3">Перетащите сюда</p>
           <p className=" text-[#6B7280] font-normal text-xs pt-1 text-center">
             любой элемент
             <br />
@@ -41,7 +35,6 @@ const DroppableField: FC<IDroppableFieldProps> = ({
           </p>
         </>
       )}
-
       {children}
     </div>
   );

@@ -1,39 +1,32 @@
 import React, { type FC } from 'react';
-import { renderCalculatorBlock } from '../../helpers/renderCalculatorBlock';
-import {
-  type ICalculationData,
-  type ICalculatorItem,
-  type IdWithNull,
-} from '../../pages/types';
+import { type CalculationData, type CalculatorItem } from '../../pages/types';
+import CalculatorBlockWrapper from '../../ui/wrappers/CalculatorBlockWrapper/CalculatorBlockWrapper';
 
-interface ICalculatorBlockProps {
-  itemsWithParent: ICalculatorItem[];
-  activeId: IdWithNull;
-  mode: boolean;
-  calculatorData: ICalculationData;
-  setCalculatorData: (value: ICalculationData) => void;
+interface CalculatorBlockProps {
+  itemsWithParent: CalculatorItem[];
+  isConstructorMode: boolean;
+  calculatorData: CalculationData;
+  setCalculatorData: (value: CalculationData) => void;
 }
 
-const CalculatorBlock: FC<ICalculatorBlockProps> = ({
+const CalculatorBlock: FC<CalculatorBlockProps> = ({
   itemsWithParent,
-  activeId,
-  mode,
+  isConstructorMode,
   calculatorData,
   setCalculatorData,
 }) => {
   return (
     <div className="gap-[12px] flex flex-col mt-[30px]">
-      {itemsWithParent.map(el =>
-        renderCalculatorBlock(
-          el.id,
-          'standard',
-          activeId,
-          mode,
-          calculatorData,
-          setCalculatorData,
-          'calculatorMode',
-        ),
-      )}
+      {itemsWithParent.map(el => (
+        <CalculatorBlockWrapper
+          disabledStatus={false}
+          blockType={el.blockType}
+          calculatorData={calculatorData}
+          setCalculatorData={setCalculatorData}
+          isConstructorMode={isConstructorMode}
+          key={el.blockType + 'calculatorMode'}
+        />
+      ))}
     </div>
   );
 };

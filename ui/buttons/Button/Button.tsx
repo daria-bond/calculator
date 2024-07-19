@@ -1,22 +1,23 @@
-import clsx from 'clsx';
 import React, { type FC } from 'react';
 
-interface IButtonProps {
+interface ButtonProps {
   width?: 'full' | 'small' | 'medium';
   text: string;
   colorButton?: 'white' | 'blue';
   height?: 'small' | 'large';
   onClick?: () => void;
   disabled: boolean;
+  isCursorDefault?: boolean;
 }
 
-const Button: FC<IButtonProps> = ({
+const Button: FC<ButtonProps> = ({
   width = 'small',
   text,
   colorButton = 'white',
   height = 'small',
   onClick,
   disabled,
+  isCursorDefault = false,
 }) => {
   const widthSizeVariants = {
     full: 'w-full',
@@ -40,15 +41,14 @@ const Button: FC<IButtonProps> = ({
   return (
     <button
       disabled={disabled}
-      className={clsx(
-        'rounded-md text-sm/[15px] font-medium text-center',
-        `${widthSizeVariants[width]} 
-         ${heightSizeVariants[height]} 
-         ${colorVariants[disabled ? `${colorButton}Disabled` : colorButton]}
-         ${onClick === undefined ? 'cursor-pointer' : ''}
-         ${onClick !== undefined && disabled ? 'cursor-move' : ''}
-         `,
-      )}
+      className={`rounded-md text-sm/[15px] font-medium text-center 
+      ${widthSizeVariants[width]} 
+      ${heightSizeVariants[height]} 
+      ${colorVariants[disabled ? `${colorButton}Disabled` : colorButton]} 
+      ${onClick === undefined || !disabled ? 'cursor-pointer' : ''} 
+      ${isCursorDefault ? 'cursor-default' : ''} 
+      ${onClick !== undefined && disabled && !isCursorDefault ? 'cursor-move' : ''} 
+      `}
       onClick={disabled ? undefined : onClick}
     >
       {text}

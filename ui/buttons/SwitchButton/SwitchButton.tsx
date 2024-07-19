@@ -2,13 +2,13 @@ import React, { type FC } from 'react';
 import ArrowsIcon from './ArrowsIcon';
 import EyeIcon from './EyeIcon';
 
-interface ISwitchButtonProps {
+interface SwitchButtonProps {
   name: string;
   checked: boolean;
   setCheck: () => void;
 }
 
-const SwitchButton: FC<ISwitchButtonProps> = ({ name, checked, setCheck }) => {
+const SwitchButton: FC<SwitchButtonProps> = ({ name, checked, setCheck }) => {
   return (
     <label
       htmlFor={name}
@@ -20,7 +20,7 @@ const SwitchButton: FC<ISwitchButtonProps> = ({ name, checked, setCheck }) => {
         type="checkbox"
         className="hidden peer"
         checked={checked}
-        onChange={e => {
+        onChange={() => {
           setCheck();
         }}
       />
